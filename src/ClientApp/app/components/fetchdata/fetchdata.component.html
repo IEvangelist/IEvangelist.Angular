@@ -1,0 +1,27 @@
+<h1>Weather forecast</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+<button class="btn btn-primary" (click)="attemptGet()">
+    {{ isFetching ? "Fetching" : "Fetch Data" }}
+    <span class="badge">{{ count }}</span>
+</button>
+
+<table class='table' *ngIf="forecasts">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Temp. (C)</th>
+            <th>Temp. (F)</th>
+            <th>Summary</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr *ngFor="let forecast of forecasts">
+            <td>{{ forecast.dateFormatted }}</td>
+            <td>{{ forecast.temperatureC }}</td>
+            <td>{{ forecast.temperatureF }}</td>
+            <td>{{ forecast.summary }}</td>
+        </tr>
+    </tbody>
+</table>
