@@ -18,19 +18,22 @@ export class CharacterEditorComponent implements OnInit {
     ngOnInit() {
         this.http
             .get('api/characters')
-            .subscribe(response => {
-                const characters = response.json() as Character[];
-                if (characters && characters.length) {
-                    // Mutable operation
-                    characters.sort((left, right): number =>
-                        left.name < right.name ? -1 : left.name > right.name ? 1 : 0
-                    );
-                    this.characters = characters;
-                    this.character = characters[0];
-                    this.onChange();
-                }                
-            });
+            .subscribe(response =>
+                this.onCharactersReceived(response.json() as Character[])
+            );
     }   
+
+    onCharactersReceived(characters: Character[]) {
+        if (characters && characters.length) {
+            // Mutable operation
+            characters.sort((left, right): number =>
+                left.name < right.name ? -1 : left.name > right.name ? 1 : 0
+            );
+            this.characters = characters;
+            this.character = characters[0];
+            this.onChange();
+        }
+    }
 
     onChange() {
         this.imageSource = CharacterAssetResolver.resolve(this.character.name);
