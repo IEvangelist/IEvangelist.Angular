@@ -76,6 +76,7 @@ namespace IEvangelist.Angular
             app.UseResponseCompression()
                .UseSwagger()
                .UseSwaggerUi()
+               .UseStaticFiles()
                .UseStaticFiles(new StaticFileOptions
                {
                    FileProvider = new PhysicalFileProvider(Combine(env.ContentRootPath, node_modules)),

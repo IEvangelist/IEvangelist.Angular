@@ -1,0 +1,27 @@
+﻿.panel {
+    margin-bottom: 5px;
+}
+
+#accordion .panel-heading {
+    padding: 0;
+}
+
+#accordion .panel-title > a {
+    display: block;
+    padding: 0.4em 0.6em;
+    outline: none;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+
+a.collapsed[data-toggle="collapse"] h4::before {
+    content: "\e114";
+}
+
+a[data-toggle="collapse"] h4::before {
+    content: "\e113";
+    float: left;
+    font-family: 'Glyphicons Halflings';
+    margin-right: 1em;
+}

@@ -1,0 +1,59 @@
+﻿<div class="col-md-12">
+    <form role="form">
+        <div class="form-group-lg">
+            <h3>Select Chracter</h3>
+            <select class="form-control" name="character"
+                    [(ngModel)]="character" (change)="onChange()">
+                <option *ngFor="let char of characters" [ngValue]="char">
+                    {{ char.name }}
+                </option>
+            </select>
+        </div>
+        <br />
+        <div *ngIf="character" class="form-group">
+
+            <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+                <collapsible-panel [header]="'Details'">
+                    <p class="lead">
+                        {{ character.realName }} ({{ character.name }})
+                    </p>
+
+                    <blockquote class="text-info">{{ character.description }}</blockquote>
+
+                    <div class="input-group">
+                        <div class="input-group-addon">Height</div>
+                        <input type="text" [(ngModel)]="character.height" name="height" class="form-control" />
+                    </div>
+                    <br />
+                    <div class="input-group">
+                        <div class="input-group-addon">Weight</div>
+                        <input type="text" [(ngModel)]="character.weight" name="weight" class="form-control" />
+                    </div>
+                </collapsible-panel>
+
+                <collapsible-panel [header]="'Powers'">
+                    <div class="input-group">
+                        <div class="input-group-addon">{{ character.name }}'s Powers</div>
+                        <textarea [(ngModel)]="character.powers" class="form-control"
+                                  name="powers" rows="7">
+                        </textarea>
+                    </div>
+                </collapsible-panel>
+
+                <collapsible-panel [header]="'Abilities'">
+                    <div class="input-group">
+                        <div class="input-group-addon">{{ character.name }}'s Abilities</div>
+                        <textarea [(ngModel)]="character.abilities" class="form-control"
+                                  name="powers" rows="7">
+                        </textarea>
+                    </div>
+                </collapsible-panel>
+
+                <collapsible-panel [header]="'Image'">
+                    <img src="{{ imageSource }}" />
+                </collapsible-panel>
+
+            </div>
+        </div>
+    </form>
+</div>

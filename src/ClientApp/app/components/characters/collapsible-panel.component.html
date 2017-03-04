@@ -1,0 +1,15 @@
+﻿<div class="panel panel-info">
+    <div class="panel-heading" role="tab" id="{{ headerId }}">
+        <a role="button" data-toggle="collapse" data-parent="#accordion"
+           href="#{{ buttonId }}" aria-expanded="true" aria-controls="collapseOne">
+            <h4 class="panel-title">
+                {{ header }}
+            </h4>
+        </a>
+    </div>
+    <div id="{{ buttonId }}" class="panel-collapse collapse collapsed" role="tabpanel">
+        <div class="panel-body">
+            <ng-content></ng-content>
+        </div>
+    </div>
+</div>
