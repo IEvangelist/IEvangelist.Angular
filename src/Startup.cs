@@ -1,3 +1,4 @@
+using IEvangelist.Angular.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.SpaServices.Webpack;
@@ -22,7 +23,7 @@ namespace IEvangelist.Angular
                    .UseStartup<Startup>()
                    .Build();
 
-        public IConfigurationRoot Configuration { get; }
+        internal IConfigurationRoot Configuration { get; }
 
         public Startup(IHostingEnvironment env)
             => Configuration =
@@ -40,10 +41,13 @@ namespace IEvangelist.Angular
             {
                 options.SingleApiVersion(new Info
                 {
-                    Title = "IEvangelist.Web API",
+                    Title = "IEvangelist.Angular API",
                     Version = "v1"
                 });
             });
+
+            services.Configure<RepositorySettings>(Configuration.GetSection(nameof(RepositorySettings)));
+            services.AddSingleton<IDbRepository, DocumentDbRepository>();
 
             // Add framework services.
             services.AddMvc();
@@ -52,7 +56,10 @@ namespace IEvangelist.Angular
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, 
+                              IHostingEnvironment env, 
+                              ILoggerFactory loggerFactory,
+                              IDbRepository repository)
         {
             if (env.IsDevelopment())
             {
@@ -94,6 +101,9 @@ namespace IEvangelist.Angular
                        name: "spa-fallback",
                        defaults: new { controller = "Home", action = "Index" });
                });
+            
+            repository.InitializeAsync()
+                      .Wait();
         }
     }
 }

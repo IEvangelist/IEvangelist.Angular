@@ -1,0 +1,129 @@
+﻿using IEvangelist.Angular.Models;
+using Microsoft.Azure.Documents;
+using Microsoft.Azure.Documents.Client;
+using Microsoft.Azure.Documents.Linq;
+using Microsoft.Extensions.Options;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Net;
+using System.Threading.Tasks;
+
+namespace IEvangelist.Angular.Repositories
+{
+    public class DocumentDbRepository : IDbRepository
+    {
+        private DocumentClient _client;
+        private RepositorySettings _settings;
+
+        public DocumentDbRepository(IOptions<RepositorySettings> repositoryOptions)
+        {
+            if (repositoryOptions == null)
+            {
+                throw new ArgumentNullException(nameof(repositoryOptions));
+            }
+
+            _settings = repositoryOptions.Value;
+        }
+
+        public async Task<T> GetAsync<T>(string id) where T : Document
+        {
+            try
+            {
+                Document document =
+                    await _client.ReadDocumentAsync(_settings.GetDocumentUri(id));
+                return (T)(dynamic)document;
+            }
+            catch (DocumentClientException e) when (e.StatusCode == HttpStatusCode.NotFound)
+            {
+                return null;
+            }
+        }
+
+        public async Task<IEnumerable<T>> GetAsync<T>(
+            Expression<Func<T, bool>> predicate)
+            where T : Document
+        {
+            IDocumentQuery<T> query =
+                _client.CreateDocumentQuery<T>(_settings.GetDocumentCollectionUri(),
+                                               new FeedOptions { MaxItemCount = -1 })
+                       .Where(predicate)
+                       .AsDocumentQuery();
+
+            var results = new List<T>();
+            while (query.HasMoreResults)
+            {
+                results.AddRange(await query.ExecuteNextAsync<T>());
+            }
+
+            return results;
+        }
+
+        public async Task<Document> CreateAsync<T>(T value)
+            where T : Document
+            => await _client.CreateDocumentAsync(_settings.GetDocumentCollectionUri(), value);
+
+        public Task<Document[]> CreateAsync<T>(IEnumerable<T> values) where T : Document
+            => Task.WhenAll(values.Select(CreateAsync));
+
+        public async Task<Document> UpdateAsync<T>(string id, T value) 
+            where T : Document
+            => await _client.ReplaceDocumentAsync(_settings.GetDocumentUri(id), value);
+
+        public Task DeleteAsync(string id)
+            => _client.DeleteDocumentAsync(_settings.GetDocumentUri(id));
+
+        public async Task InitializeAsync()
+        {
+            _client =
+                new DocumentClient(new Uri(_settings.Endpoint),
+                                   _settings.Key,
+                                   new ConnectionPolicy { EnableEndpointDiscovery = false });
+
+            (bool databaseCreated, bool collectionCreated)
+                = await IsFirstInitializationAsync();
+
+            if (databaseCreated && collectionCreated)
+            {
+                await CreateAsync(Character.Defaults);
+            }
+        }
+
+        private async Task<(bool databaseCreated, bool collectionCreated)> IsFirstInitializationAsync()
+            => (await CreateDatabaseIfNotExistsAsync(), await CreateCollectionIfNotExistsAsync());
+
+        private async Task<bool> CreateDatabaseIfNotExistsAsync()
+        {
+            try
+            {
+                await _client.ReadDatabaseAsync(UriFactory.CreateDatabaseUri(_settings.DatabaseId));
+                return false;
+            }
+            catch (DocumentClientException e) when (e.StatusCode == HttpStatusCode.NotFound)
+            {
+                await _client.CreateDatabaseAsync(new Database { Id = _settings.DatabaseId });
+                return true;
+            }
+        }
+
+        private async Task<bool> CreateCollectionIfNotExistsAsync()
+        {
+            try
+            {
+                await _client.ReadDocumentCollectionAsync(
+                    UriFactory.CreateDocumentCollectionUri(_settings.DatabaseId,
+                                                           _settings.CollectionId));
+                return false;
+            }
+            catch (DocumentClientException e) when (e.StatusCode == HttpStatusCode.NotFound)
+            {
+                await _client.CreateDocumentCollectionAsync(
+                        UriFactory.CreateDatabaseUri(_settings.DatabaseId),
+                        new DocumentCollection { Id = _settings.CollectionId },
+                        new RequestOptions { OfferThroughput = 1000 });
+                return true;
+            }
+        }
+    }
+}
