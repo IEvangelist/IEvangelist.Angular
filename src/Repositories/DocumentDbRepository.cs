@@ -2,6 +2,7 @@
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
 using Microsoft.Azure.Documents.Linq;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -16,15 +17,14 @@ namespace IEvangelist.Angular.Repositories
     {
         private DocumentClient _client;
         private RepositorySettings _settings;
+        private ILogger _logger;
 
-        public DocumentDbRepository(IOptions<RepositorySettings> repositoryOptions)
+        public DocumentDbRepository(
+            IOptions<RepositorySettings> repositoryOptions,
+            ILogger<DocumentDbRepository> logger)
         {
-            if (repositoryOptions == null)
-            {
-                throw new ArgumentNullException(nameof(repositoryOptions));
-            }
-
-            _settings = repositoryOptions.Value;
+            _settings = repositoryOptions?.Value ?? throw new ArgumentNullException(nameof(repositoryOptions));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task<T> GetAsync<T>(string id) where T : Document
@@ -37,6 +37,7 @@ namespace IEvangelist.Angular.Repositories
             }
             catch (DocumentClientException e) when (e.StatusCode == HttpStatusCode.NotFound)
             {
+                _logger.LogError(0, e, e.Message);
                 return null;
             }
         }
@@ -102,6 +103,8 @@ namespace IEvangelist.Angular.Repositories
             }
             catch (DocumentClientException e) when (e.StatusCode == HttpStatusCode.NotFound)
             {
+                _logger.LogError(1, e, e.Message);
+
                 await _client.CreateDatabaseAsync(new Database { Id = _settings.DatabaseId });
                 return true;
             }
@@ -118,6 +121,8 @@ namespace IEvangelist.Angular.Repositories
             }
             catch (DocumentClientException e) when (e.StatusCode == HttpStatusCode.NotFound)
             {
+                _logger.LogError(2, e, e.Message);
+
                 await _client.CreateDocumentCollectionAsync(
                         UriFactory.CreateDatabaseUri(_settings.DatabaseId),
                         new DocumentCollection { Id = _settings.CollectionId },
