@@ -10,33 +10,28 @@ namespace IEvangelist.Angular.Controllers
     [Route("api/[controller]")]
     public class CharactersController : Controller
     {
+        private readonly IDbRepository _repository;
+
+        public CharactersController(IDbRepository repository)
+            => _repository =
+                repository ?? throw new ArgumentNullException(nameof(repository));
+
         [HttpGet]
-        public Task<IEnumerable<Character>> GetAsync(
-            [FromServices] IDbRepository repository)
-            => repository.GetAsync<Character>(chr => chr != null);
-        
+        public Task<IEnumerable<Character>> GetAll()
+            => _repository.GetAsync<Character>(chr => chr != null);
+
         [HttpGet("{id}")]
-        public string Get(Guid id)
-        {
-            return "value";
-        }
+        public Task<Character> Get(string id)
+            => _repository.GetAsync<Character>(id);
 
-        // POST api/values
         [HttpPost]
-        public void Post([FromBody]string value)
-        {
-        }
-
-        // PUT api/values/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody]string value)
-        {
-        }
-
-        // DELETE api/values/5
+        public Task Post([FromBody] Character character)
+            => _repository.UpdateAsync(character.Id, character);
+        
         [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
-        }
+        public Task Delete(string id)
+            => _repository.DeleteAsync(id.ToString());
+
+
     }
 }
