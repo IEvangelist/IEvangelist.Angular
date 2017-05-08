@@ -1,7 +1,7 @@
 ﻿<div class="col-md-12">
     <form role="form">
         <div class="form-group-lg">
-            <h3>Select Chracter</h3>
+            <h3>Select Character</h3>
             <select class="form-control" name="character"
                     [(ngModel)]="character" (change)="onChange()">
                 <option *ngFor="let char of characters" [ngValue]="char">
@@ -52,6 +52,11 @@
                 <collapsible-panel [header]="'Image'">
                     <img src="{{ imageSource }}" />
                 </collapsible-panel>
+                
+                <button type="submit" class="btn btn-lg btn-primary"
+                        (click)="onSave()">
+                    Save
+                </button>
 
             </div>
         </div>

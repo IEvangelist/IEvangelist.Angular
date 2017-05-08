@@ -21,8 +21,8 @@ namespace IEvangelist.Angular.Controllers
             => _repository.GetAsync<Character>(chr => chr != null);
 
         [HttpGet("{id}")]
-        public Task<Character> Get(string id)
-            => _repository.GetAsync<Character>(id);
+        public Task<Character> Get([FromServices] IDbRepository repo, string id)
+            => repo.GetAsync<Character>(id);
 
         [HttpPost]
         public Task Post([FromBody] Character character)
