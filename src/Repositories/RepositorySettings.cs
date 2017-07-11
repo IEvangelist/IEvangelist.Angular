@@ -1,10 +1,12 @@
-﻿using Microsoft.Azure.Documents.Client;
-using System;
+﻿using System;
+using Microsoft.Azure.Documents.Client;
 
 namespace IEvangelist.Angular.Repositories
 {
     public class RepositorySettings
     {
+        public bool IsEmulatorDependent => Endpoint?.Contains("localhost") ?? false;
+
         public string Endpoint { get; set; }
 
         public string Key { get; set; }

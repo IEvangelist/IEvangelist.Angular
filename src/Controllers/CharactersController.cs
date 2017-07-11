@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc;
-using System;
-using IEvangelist.Angular.Models;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using IEvangelist.Angular.Models;
 using IEvangelist.Angular.Repositories;
+using Microsoft.AspNetCore.Mvc;
 
 namespace IEvangelist.Angular.Controllers
 {
@@ -31,7 +31,6 @@ namespace IEvangelist.Angular.Controllers
         [HttpDelete("{id}")]
         public Task Delete(string id)
             => _repository.DeleteAsync(id.ToString());
-
 
     }
 }

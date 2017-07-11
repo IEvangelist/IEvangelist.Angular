@@ -10,6 +10,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace IEvangelist.Angular.Repositories
 {
@@ -77,6 +78,11 @@ namespace IEvangelist.Angular.Repositories
 
         public async Task InitializeAsync()
         {
+            if (_settings.IsEmulatorDependent)
+            {
+                StartEmulatorIfNotRunning();
+            }
+
             _client =
                 new DocumentClient(new Uri(_settings.Endpoint),
                                    _settings.Key,
@@ -89,6 +95,21 @@ namespace IEvangelist.Angular.Repositories
             {
                 await CreateAsync(Character.Defaults);
             }
+        }
+
+        private void StartEmulatorIfNotRunning()
+        {
+            var emulators = Process.GetProcessesByName("DocumentDB.Emulator");
+            if (emulators.Length == 0)
+            {
+                const string emulatorPath =
+                    "C:\\Program Files\\DocumentDB Emulator\\DocumentDB.Emulator.exe";
+                var emulatorProcess = new ProcessStartInfo(emulatorPath)
+                {
+                    LoadUserProfile = true
+                };
+                Process.Start(emulatorProcess);
+            }            
         }
 
         private async Task<(bool databaseCreated, bool collectionCreated)> IsFirstInitializationAsync()
